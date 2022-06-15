@@ -11,7 +11,10 @@ load_dotenv()
 sys.path.insert(0, "..")
 
 
-def connect(timeout=0):
+"""
+    This function tries to connect to the server
+"""
+def connectToServer(timeout=0):
     try:
         url = os.getenv('ENDPOINT')
         client = Client(url)
@@ -30,7 +33,6 @@ def connect(timeout=0):
         print('________________client connected_________________')
         timeout = 0
 
-        print("client here", client)
         return client
 
     except KeyboardInterrupt:
@@ -41,7 +43,7 @@ def connect(timeout=0):
         print('trying to connect after {} seconds'.format(timeout))
         time.sleep(timeout)
         timeout += 5
-        connect(timeout)
+        connectToServer(timeout)
 
     except Exception as e:
         print("unexpected error", e)
@@ -84,15 +86,15 @@ def start(_client):
             printValues(heartbeatValue, factValue, lengthValue)
 
             time.sleep(5)
+
         except KeyboardInterrupt:
             print('\n_______________See You Later!_______________')
             _client.disconnect()
             os._exit(0)
-        # except SystemExit:
-        #     print("here")
+
         except Exception as e:
             print('\n_________connection Interrupted________', e)
-            _client = connect()
+            _client = connectToServer()
 
 
 def drawCat():
@@ -109,6 +111,9 @@ def drawCat():
     print(Style.RESET_ALL)
 
 
+"""
+    this function fetches CAT DATA through REST request
+"""
 def getCatFact():
     try:
         url = os.getenv('CATFACTURL')
@@ -130,17 +135,17 @@ def printValues(heartbeat, fact, length):
     # draw a cute cat
     drawCat()
     # print values
-    print(Style.BRIGHT+Fore.RED+'Length: ',length)
+    print(Style.BRIGHT+Fore.RED+'Length: ', length)
     print(Style.RESET_ALL)
-    print(Fore.YELLOW+'\nFact: ',fact)
+    print(Fore.YELLOW+'Fact: ', fact)
     print(Style.RESET_ALL)
     
 
-
 if __name__ == "__main__":
-    _client = connect()
-    print("client: ", _client)
-    if not _client:
+    client = None
+    while client == None:
+        client = connectToServer()
+    if not client:
         print("error in connection")
         os._exit(0)
-    start(_client)
+    start(client)

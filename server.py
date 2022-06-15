@@ -10,7 +10,6 @@ load_dotenv()
 from colorama import init, Fore, Back, Style
 init()
 
-from termcolor import colored
 from prettytable.colortable import ColorTable, Themes
 x = ColorTable(theme=Themes.OCEAN)
 sys.path.insert(0, "..")
@@ -30,19 +29,18 @@ def user_manager(isession, username, password):
 ##########
 
 
-def printHeartbeat(_heartbeat, fact, length):
-    x.field_names = ["Heartbeat", "Length"]
+def printValues(_heartbeat, fact, length):
+    x.field_names = ["Heartbeat", "Length", "fact"]
     if _heartbeat:
-        hearbeat2 = Back.GREEN + 'TRUE'
+        hearbeat2 = Back.CYAN + Fore.BLACK + 'ALIVE :)'
     else:
-        hearbeat2 = Back.RED + 'FALSE'
+        hearbeat2 = Back.RED + Fore.BLACK + 'DEAD :('
 
-    x.add_row([hearbeat2, length])
+    x.add_row([hearbeat2, length, fact[:20]])
     x.border = True
     
     print(x)
     
-
 
 if __name__ == "__main__":
     """
@@ -73,7 +71,6 @@ if __name__ == "__main__":
     mibaObject = node.add_object(addressSpace, 'Miba')
     catFactFolder = mibaObject.add_folder(addressSpace, 'catFact')
 
-
     """
         add Variables
     """
@@ -91,15 +88,10 @@ if __name__ == "__main__":
 
     #  start server
     server.start()
-    print(colored('Hello, World!', 'blue', 'on_yellow'))
-    # print(Fore.RED + 'some red text')
-    # a = Back.LIGHTCYAN_EX + 'and with a green background'
-    # print(a)
-    # print(Style.BRIGHT + 'and in dim text')
     try:
         while True:
             _heartbeat = hearbeat.get_value()
-            printHeartbeat(_heartbeat, fact.get_value(), length.get_value())
+            printValues(_heartbeat, fact.get_value(), length.get_value())
             hearbeat.set_value(not _heartbeat)
             time.sleep(1)
     except KeyboardInterrupt:
