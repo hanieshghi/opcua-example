@@ -116,7 +116,7 @@ def drawCat():
 """
 def getCatFact():
     try:
-        url = os.getenv('CATFACTURL')
+        url = os.getenv('CAT_FACT_URL')
         data = requests.get(url)
         if not data.status_code or data.status_code != 200:
             print('cannot get catfact. error: {}'.format(data.json()))

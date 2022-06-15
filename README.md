@@ -2,7 +2,7 @@
 Simple OPCUA server and client with encryption and authentication
 
 
-# How to use this code
+# How to run the code
 - install requirements:
         `pip install -r requirements.txt`
 - set env variables:
