@@ -1,62 +1,93 @@
 import time
+import os
 from opcua import Server, ua
 from opcua.server.user_manager import UserManager
 import sys
-
+from dotenv import load_dotenv
+load_dotenv()
 
 sys.path.insert(0, "..")
-# setup for username and password
-users_db = {"miba": "1234$"}
+
+
+"""
+    setup for authentication
+"""
+user = os.getenv('USERNAME')
+password = os.getenv('PASSWORD')
+users_db = {user: password}
 
 
 def user_manager(isession, username, password):
     isession.user = UserManager.User
     return username in users_db and password == users_db[username]
+##########
+
+
+def printHeartbeat(_heartbeat, fact, length):
+    if _heartbeat:
+        print('___________', length, fact)
+        # print('           |')
+        # print('           |')
+    else:
+        # print('___________')
+        print('|', length, fact)
+        # print('|')
 
 
 if __name__ == "__main__":
+    """
+        SERVER SETUP
+    """
     server = Server()
-
     serverName = "MIBA_SERVER_TEST"
     server.set_server_name(serverName)
     addressSpace = server.register_namespace('URI:urn:example.org:FreeOpcUa:python-opcua')
 
+    # set server security policy
     server.set_security_policy([ua.SecurityPolicyType.Basic256Sha256_SignAndEncrypt])
-    server.load_certificate('my_cert.der')
-    server.load_private_key('my_private_key.pem')
+    server.load_certificate('cert/my_cert.der')
+    server.load_private_key('cert/my_private_key.pem')
 
-
-
+    #  set user manager
     policyIDs = ["Username"]
     server.set_security_IDs(policyIDs)
     server.user_manager.set_user_manager(user_manager)
-    # server.allow_remote_admin(False)
-    url = 'opc.tcp://127.0.0.1:4842'
+
+    url = os.getenv('ENDPOINT')
     server.set_endpoint(url)
-    print(server.get_root_node())
+
+    """
+        SERVER MODELING
+    """
     node = server.get_objects_node()
-
     mibaObject = node.add_object(addressSpace, 'Miba')
-
     catFactFolder = mibaObject.add_folder(addressSpace, 'catFact')
-    fact = catFactFolder.add_variable('ns={};s=Miba.catfact.fact;'.format(addressSpace), 'fact', 'inital string',
-                                      ua.VariantType.String)
-    length = catFactFolder.add_variable('ns={};s=Miba.catfact.length;'.format(addressSpace), 'length', 0,
-                                        ua.VariantType.Int64)
 
-    hearbeat = mibaObject.add_variable('ns={};s=Miba.heartbeat;'.format(addressSpace), 'hearbeat', False,
-                                       ua.VariantType.Boolean)
 
+    """
+        add Variables
+    """
+    factIdentifier = 'ns={};s=Miba.catfact.fact;'.format(addressSpace)
+    lengthIdentifier = 'ns={};s=Miba.catfact.length;'.format(addressSpace)
+    heartbeatIdentifier = 'ns={};s=Miba.heartbeat;'.format(addressSpace)
+
+    fact = catFactFolder.add_variable(factIdentifier, 'fact', '', ua.VariantType.String)
+    length = catFactFolder.add_variable(lengthIdentifier, 'length', 0, ua.VariantType.Int64)
+    hearbeat = mibaObject.add_variable(heartbeatIdentifier, 'hearbeat', True, ua.VariantType.Boolean)
+
+    #  fact and length should be writable to be changed from client
     fact.set_writable()
     length.set_writable()
 
+    #  start server
     server.start()
 
     try:
         while True:
             _heartbeat = hearbeat.get_value()
+            printHeartbeat(_heartbeat, fact.get_value(), length.get_value())
             hearbeat.set_value(not _heartbeat)
             time.sleep(1)
     except KeyboardInterrupt:
-        print('server stopped')
+        print('_______________________server stopped_________________________')
         server.stop()

@@ -3,30 +3,35 @@ import sys
 import time
 from opcua import Client
 import requests
+from dotenv import load_dotenv
 
-sys.path.insert(0,"..")
+load_dotenv()
+sys.path.insert(0, "..")
+
 
 def connect(timeout=0):
     try:
-        url = 'opc.tcp://127.0.0.1:4842'
+        url = os.getenv('ENDPOINT')
         client = Client(url)
-        client.set_user('miba')
-        client.set_password('1234$')
 
-        client.set_security_string("Basic256Sha256,SignAndEncrypt,my_cert.der,my_private_key.pem")
+        """
+        SET Credentials
+        """
+        client.set_user(os.getenv('USERNAME'))
+        client.set_password(os.getenv('PASSWORD'))
+        client.set_security_string("Basic256Sha256,SignAndEncrypt,cert/my_cert.der,cert/my_private_key.pem")
         # client.application_uri = "urn:example.org:FreeOpcUa:python-opcua"
         # client.secure_channel_timeout = 10000
         # client.session_timeout = 10000
 
         client.connect()
-        print('client connected')
+        print('________________client connected_________________')
         timeout = 0
         return client
 
     except KeyboardInterrupt:
         print('\n_______________See You Later!_______________')
         os._exit(0)
-        # client.disconnect()
 
     except ConnectionRefusedError:
         print('trying to connect after {} seconds'.format(timeout))
@@ -35,45 +40,72 @@ def connect(timeout=0):
         connect(timeout)
 
     except Exception as e:
-        print("errorrrr", e)
+        print("unexpected error", e)
         return False
 
-def start(client):
+
+def start(_client):
     while True:
         try:
-            fact, length = getCatFact()
-            lengthNode = client.get_node('ns=2;s=Miba.catfact.length')
+            """
+                GET NODES and VALUES
+            """
+            lengthNode = _client.get_node('ns=2;s=Miba.catfact.length')
             lengthValue = lengthNode.get_value()
 
-            heartbeatNode = client.get_node('ns=2;s=Miba.heartbeat')
+            heartbeatNode = _client.get_node('ns=2;s=Miba.heartbeat')
             heartbeatValue = heartbeatNode.get_value()
 
-            factNode = client.get_node('ns=2;s=Miba.catfact.fact')
+            factNode = _client.get_node('ns=2;s=Miba.catfact.fact')
             factValue = factNode.get_value()
 
-            print(heartbeatValue, factValue, lengthValue)
+            """
+                GET CATFACT DATA through REST REQUEST
+            """
+            fact, length = getCatFact()
+
+            """
+                SET LENGTH and FACT values
+            """
             lengthNode.set_value(length)
             factNode.set_value(fact)
+
+            """
+            PRINT DATA
+            """
+            printValues(heartbeatValue, factValue, lengthValue)
+
             time.sleep(5)
         except KeyboardInterrupt:
             print('\n_______________See You Later!_______________')
-            client.disconnect()
+            _client.disconnect()
             os._exit(0)
         # except SystemExit:
         #     print("here")
         except Exception as e:
-            print('\n_________connection Interrupted________',e)
-            client = connect()
+            print('\n_________connection Interrupted________', e)
+            _client = connect()
 
+
+def drawCat():
+    print(" ,_     _")
+    print("  |\\_,-~/")
+    print(" / _  _ |    ,--.")
+    print("(  @  @ )   / ,-'")
+    print(" \  T/-._( (")
+    print(' /         `. ')
+    print("|         _  \ |")
+    print(" \ \ ,  /      |")
+    print("  || |-\_   /")
+    print(" ((/`(_,-'")
 
 
 def getCatFact():
     try:
-        url = 'https://catfact.ninja/fact'
+        url = os.getenv('CATFACTURL')
         data = requests.get(url)
         if not data.status_code or data.status_code != 200:
             print('cannot get catfact. error: {}'.format(data.json()))
-            # raise SystemExit(0)
             os._exit(0)
         else:
             catfact = data.json()
@@ -83,9 +115,18 @@ def getCatFact():
         os._exit(0)
 
 
+def printValues(heartbeat, fact, length):
+    # clear terminal
+    os.system('cls' if os.name == 'nt' else 'clear')
+    # draw a cute cat
+    drawCat()
+    # print values
+    print(heartbeat, fact, length)
+
+
 if __name__ == "__main__":
     client = connect()
     if not client:
-        print ("error in connection")
+        print("error in connection")
         exit()
     start(client)
