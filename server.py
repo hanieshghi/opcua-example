@@ -3,9 +3,16 @@ import os
 from opcua import Server, ua
 from opcua.server.user_manager import UserManager
 import sys
+
 from dotenv import load_dotenv
 load_dotenv()
 
+from colorama import init, Fore, Back, Style
+init()
+
+from termcolor import colored
+from prettytable.colortable import ColorTable, Themes
+x = ColorTable(theme=Themes.OCEAN)
 sys.path.insert(0, "..")
 
 
@@ -24,14 +31,17 @@ def user_manager(isession, username, password):
 
 
 def printHeartbeat(_heartbeat, fact, length):
+    x.field_names = ["Heartbeat", "Length"]
     if _heartbeat:
-        print('___________', length, fact)
-        # print('           |')
-        # print('           |')
+        hearbeat2 = Back.GREEN + 'TRUE'
     else:
-        # print('___________')
-        print('|', length, fact)
-        # print('|')
+        hearbeat2 = Back.RED + 'FALSE'
+
+    x.add_row([hearbeat2, length])
+    x.border = True
+    
+    print(x)
+    
 
 
 if __name__ == "__main__":
@@ -81,7 +91,11 @@ if __name__ == "__main__":
 
     #  start server
     server.start()
-
+    print(colored('Hello, World!', 'blue', 'on_yellow'))
+    # print(Fore.RED + 'some red text')
+    # a = Back.LIGHTCYAN_EX + 'and with a green background'
+    # print(a)
+    # print(Style.BRIGHT + 'and in dim text')
     try:
         while True:
             _heartbeat = hearbeat.get_value()

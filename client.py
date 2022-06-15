@@ -1,10 +1,12 @@
+from ast import For
 import os
 import sys
 import time
 from opcua import Client
 import requests
 from dotenv import load_dotenv
-
+from colorama import Fore, Back, Style
+from termcolor import colored
 load_dotenv()
 sys.path.insert(0, "..")
 
@@ -27,6 +29,8 @@ def connect(timeout=0):
         client.connect()
         print('________________client connected_________________')
         timeout = 0
+
+        print("client here", client)
         return client
 
     except KeyboardInterrupt:
@@ -48,16 +52,11 @@ def start(_client):
     while True:
         try:
             """
-                GET NODES and VALUES
+                GET NODES
             """
             lengthNode = _client.get_node('ns=2;s=Miba.catfact.length')
-            lengthValue = lengthNode.get_value()
-
             heartbeatNode = _client.get_node('ns=2;s=Miba.heartbeat')
-            heartbeatValue = heartbeatNode.get_value()
-
             factNode = _client.get_node('ns=2;s=Miba.catfact.fact')
-            factValue = factNode.get_value()
 
             """
                 GET CATFACT DATA through REST REQUEST
@@ -70,6 +69,15 @@ def start(_client):
             lengthNode.set_value(length)
             factNode.set_value(fact)
 
+
+            """
+                GET VALUES
+            """
+            lengthValue = lengthNode.get_value()
+            heartbeatValue = heartbeatNode.get_value()
+            factValue = factNode.get_value()
+
+            
             """
             PRINT DATA
             """
@@ -88,7 +96,7 @@ def start(_client):
 
 
 def drawCat():
-    print(" ,_     _")
+    print(Fore.GREEN+" ,_     _")
     print("  |\\_,-~/")
     print(" / _  _ |    ,--.")
     print("(  @  @ )   / ,-'")
@@ -98,6 +106,7 @@ def drawCat():
     print(" \ \ ,  /      |")
     print("  || |-\_   /")
     print(" ((/`(_,-'")
+    print(Style.RESET_ALL)
 
 
 def getCatFact():
@@ -121,12 +130,17 @@ def printValues(heartbeat, fact, length):
     # draw a cute cat
     drawCat()
     # print values
-    print(heartbeat, fact, length)
+    print(Style.BRIGHT+Fore.RED+'Length: ',length)
+    print(Style.RESET_ALL)
+    print(Fore.YELLOW+'\nFact: ',fact)
+    print(Style.RESET_ALL)
+    
 
 
 if __name__ == "__main__":
-    client = connect()
-    if not client:
+    _client = connect()
+    print("client: ", _client)
+    if not _client:
         print("error in connection")
-        exit()
-    start(client)
+        os._exit(0)
+    start(_client)
