@@ -46,8 +46,8 @@ if __name__ == "__main__":
     """
         SERVER SETUP
     """
-    serverName = os.getenv['SERVER_NAME']
-    nameSpace = os.getenv['SERVER_NAMESPACE']
+    serverName = os.getenv('SERVER_NAME')
+    nameSpace = os.getenv('SERVER_NAMESPACE')
     url = os.getenv('ENDPOINT')
 
     server = Server()
