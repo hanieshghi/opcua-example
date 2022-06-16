@@ -46,10 +46,14 @@ if __name__ == "__main__":
     """
         SERVER SETUP
     """
+    serverName = os.getenv['SERVER_NAME']
+    nameSpace = os.getenv['SERVER_NAMESPACE']
+    url = os.getenv('ENDPOINT')
+
     server = Server()
-    serverName = "MIBA_SERVER_TEST"
     server.set_server_name(serverName)
-    addressSpace = server.register_namespace('URI:urn:example.org:FreeOpcUa:python-opcua')
+    addressSpace = server.register_namespace(nameSpace)
+    server.set_endpoint(url)
 
     # set server security policy
     server.set_security_policy([ua.SecurityPolicyType.Basic256Sha256_SignAndEncrypt])
@@ -61,8 +65,7 @@ if __name__ == "__main__":
     server.set_security_IDs(policyIDs)
     server.user_manager.set_user_manager(user_manager)
 
-    url = os.getenv('ENDPOINT')
-    server.set_endpoint(url)
+
 
     """
         SERVER MODELING
