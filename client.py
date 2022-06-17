@@ -61,6 +61,21 @@ def start(_client):
             factNode = _client.get_node('ns=2;s=Miba.catfact.fact')
 
             """
+                GET VALUES
+            """
+            lengthValue = lengthNode.get_value()
+            heartbeatValue = heartbeatNode.get_value()
+            factValue = factNode.get_value()
+
+
+            """
+            PRINT DATA
+            """
+            printValues(heartbeatValue, factValue, lengthValue)
+            
+            time.sleep(5)
+
+            """
                 GET CATFACT DATA through REST REQUEST
             """
             fact, length = getCatFact()
@@ -72,20 +87,6 @@ def start(_client):
             factNode.set_value(fact)
 
 
-            """
-                GET VALUES
-            """
-            lengthValue = lengthNode.get_value()
-            heartbeatValue = heartbeatNode.get_value()
-            factValue = factNode.get_value()
-
-            
-            """
-            PRINT DATA
-            """
-            printValues(heartbeatValue, factValue, lengthValue)
-
-            time.sleep(5)
 
         except KeyboardInterrupt:
             print('\n_______________See You Later!_______________')
@@ -95,6 +96,7 @@ def start(_client):
         except Exception as e:
             print('\n_________connection Interrupted________', e)
             _client = connectToServer()
+            
 
 
 def drawCat():
@@ -143,7 +145,7 @@ def printValues(heartbeat, fact, length):
 
 if __name__ == "__main__":
     client = None
-    while client == None:
+    while client is None:
         client = connectToServer()
     if not client:
         print("error in connection")
