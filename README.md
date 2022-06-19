@@ -1,8 +1,10 @@
 # opcua-example
-Simple OPCUA server and client with encryption and authentication
+OPCUA server and client with encryption and authentication
 
 
 # How to run the code
+- Enter the virtual env. For example Linux:
+        `source venv/bin/activate`
 - install requirements:
         `pip install -r requirements.txt`
 - set env variables:
@@ -10,4 +12,4 @@ Simple OPCUA server and client with encryption and authentication
 - run server.py
         `python server.py`
 - run client.py
-        `run client.py`
+        `python client.py`
