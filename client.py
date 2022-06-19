@@ -1,39 +1,39 @@
-from ast import For
 import os
 import sys
 import time
 from opcua import Client
 import requests
 from dotenv import load_dotenv
-from colorama import Fore, Back, Style
-from termcolor import colored
+from colorama import Fore, Style
+
 load_dotenv()
 sys.path.insert(0, "..")
-
 
 """
     This function tries to connect to the server
 """
-def connectToServer(timeout=0):
+
+
+def connect_to_server(timeout=0):
     try:
         url = os.getenv('ENDPOINT')
-        client = Client(url)
+        _client = Client(url)
 
         """
         SET Credentials
         """
-        client.set_user(os.getenv('USERNAME'))
-        client.set_password(os.getenv('PASSWORD'))
-        client.set_security_string("Basic256Sha256,SignAndEncrypt,cert/my_cert.der,cert/my_private_key.pem")
+        _client.set_user(os.getenv('USERNAME'))
+        _client.set_password(os.getenv('PASSWORD'))
+        _client.set_security_string("Basic256Sha256,SignAndEncrypt,cert/my_cert.der,cert/my_private_key.pem")
         # client.application_uri = "urn:example.org:FreeOpcUa:python-opcua"
-        # client.secure_channel_timeout = 10000
-        # client.session_timeout = 10000
+        client.secure_channel_timeout = 10000
+        client.session_timeout = 10000
 
-        client.connect()
+        _client.connect()
         print('________________client connected_________________')
         timeout = 0
 
-        return client
+        return _client
 
     except KeyboardInterrupt:
         print('\n_______________See You Later!_______________')
@@ -43,10 +43,10 @@ def connectToServer(timeout=0):
         print('trying to connect after {} seconds'.format(timeout))
         time.sleep(timeout)
         timeout += 5
-        connectToServer(timeout)
+        connect_to_server(timeout)
 
     except Exception as e:
-        print("unexpected error", e)
+        print("unexpected error in connection", e)
         return False
 
 
@@ -56,37 +56,34 @@ def start(_client):
             """
                 GET NODES
             """
-            lengthNode = _client.get_node('ns=2;s=Miba.catfact.length')
-            heartbeatNode = _client.get_node('ns=2;s=Miba.heartbeat')
-            factNode = _client.get_node('ns=2;s=Miba.catfact.fact')
+            length_node = _client.get_node('ns=2;s=Miba.catfact.length')
+            heartbeat_node = _client.get_node('ns=2;s=Miba.heartbeat')
+            fact_node = _client.get_node('ns=2;s=Miba.catfact.fact')
 
             """
                 GET VALUES
             """
-            lengthValue = lengthNode.get_value()
-            heartbeatValue = heartbeatNode.get_value()
-            factValue = factNode.get_value()
-
+            length_value = length_node.get_value()
+            heartbeat_value = heartbeat_node.get_value()
+            fact_value = fact_node.get_value()
 
             """
             PRINT DATA
             """
-            printValues(heartbeatValue, factValue, lengthValue)
-            
+            print_values(heartbeat_value, fact_value, length_value)
+
             time.sleep(5)
 
             """
                 GET CATFACT DATA through REST REQUEST
             """
-            fact, length = getCatFact()
+            fact, length = get_cat_fact()
 
             """
                 SET LENGTH and FACT values
             """
-            lengthNode.set_value(length)
-            factNode.set_value(fact)
-
-
+            length_node.set_value(length)
+            fact_node.set_value(fact)
 
         except KeyboardInterrupt:
             print('\n_______________See You Later!_______________')
@@ -95,12 +92,11 @@ def start(_client):
 
         except Exception as e:
             print('\n_________connection Interrupted________', e)
-            _client = connectToServer()
-            
+            _client = connect_to_server()
 
 
-def drawCat():
-    print(Fore.GREEN+" ,_     _")
+def draw_cat():
+    print(Fore.GREEN + " ,_     _")
     print("  |\\_,-~/")
     print(" / _  _ |    ,--.")
     print("(  @  @ )   / ,-'")
@@ -113,41 +109,41 @@ def drawCat():
     print(Style.RESET_ALL)
 
 
-"""
-    this function fetches CAT DATA through REST request
-"""
-def getCatFact():
+def get_cat_fact():
     try:
+        """
+            make REST call to fetch CAT_DATA
+        """
         url = os.getenv('CAT_FACT_URL')
         data = requests.get(url)
         if not data.status_code or data.status_code != 200:
             print('cannot get catfact. error: {}'.format(data.json()))
-            os._exit(0)
+            os._exit(1)
         else:
             catfact = data.json()
             return catfact['fact'], catfact['length']
     except Exception as e:
         print('exception in geting catfact. error: {}'.format(e))
-        os._exit(0)
+        os._exit(1)
 
 
-def printValues(heartbeat, fact, length):
+def print_values(heartbeat, fact, length):
     # clear terminal
     os.system('cls' if os.name == 'nt' else 'clear')
     # draw a cute cat
-    drawCat()
+    draw_cat()
     # print values
-    print(Style.BRIGHT+Fore.RED+'Length: ', length)
+    print(Style.BRIGHT + Fore.RED + 'Length: ', length)
     print(Style.RESET_ALL)
-    print(Fore.YELLOW+'Fact: ', fact)
+    print(Fore.YELLOW + 'Fact: ', fact)
     print(Style.RESET_ALL)
-    
+
 
 if __name__ == "__main__":
     client = None
     while client is None:
-        client = connectToServer()
+        client = connect_to_server()
     if not client:
         print("error in connection")
-        os._exit(0)
+        os._exit(1)
     start(client)

@@ -3,14 +3,13 @@ import os
 from opcua import Server, ua
 from opcua.server.user_manager import UserManager
 import sys
-
+from colorama import init, Fore, Back
+from prettytable.colortable import ColorTable, Themes
 from dotenv import load_dotenv
-load_dotenv()
 
-from colorama import init, Fore, Back, Style
+load_dotenv()
 init()
 
-from prettytable.colortable import ColorTable, Themes
 x = ColorTable(theme=Themes.OCEAN)
 sys.path.insert(0, "..")
 
@@ -23,20 +22,19 @@ password = os.getenv('PASSWORD')
 users_db = {user: password}
 
 
-def user_manager(isession, username, password):
+def user_manager(isession, _username, _password):
     isession.user = UserManager.User
-    return username in users_db and password == users_db[username]
-##########
+    return _username in users_db and _password == users_db[_username]
 
 
-def printValues(_heartbeat, fact, length):
+def print_values(_heartbeat, _fact, _length):
     x.field_names = ["Heartbeat", "Length", "fact"]
     if _heartbeat:
-        hearbeat2 = Back.CYAN + Fore.BLACK + 'ALIVE :)'
+        heartbeat_style = Back.CYAN + Fore.BLACK + 'ALIVE :)'
     else:
-        hearbeat2 = Back.RED + Fore.BLACK + 'DEAD :('
+        heartbeat_style = Back.RED + Fore.BLACK + 'DEAD :('
 
-    x.add_row([hearbeat2, length, fact[:20]])
+    x.add_row([heartbeat_style, _length, _fact[:20]])
     x.border = True
     
     print(x)
@@ -65,8 +63,6 @@ if __name__ == "__main__":
     server.set_security_IDs(policyIDs)
     server.user_manager.set_user_manager(user_manager)
 
-
-
     """
         SERVER MODELING
     """
@@ -83,7 +79,7 @@ if __name__ == "__main__":
 
     fact = catFactFolder.add_variable(factIdentifier, 'fact', '', ua.VariantType.String)
     length = catFactFolder.add_variable(lengthIdentifier, 'length', 0, ua.VariantType.Int64)
-    hearbeat = mibaObject.add_variable(heartbeatIdentifier, 'hearbeat', True, ua.VariantType.Boolean)
+    heartbeat = mibaObject.add_variable(heartbeatIdentifier, 'heartbeat', True, ua.VariantType.Boolean)
 
     #  fact and length should be writable to be changed from client
     fact.set_writable()
@@ -93,9 +89,9 @@ if __name__ == "__main__":
     server.start()
     try:
         while True:
-            _heartbeat = hearbeat.get_value()
-            printValues(_heartbeat, fact.get_value(), length.get_value())
-            hearbeat.set_value(not _heartbeat)
+            _heartbeat = heartbeat.get_value()
+            print_values(_heartbeat, fact.get_value(), length.get_value())
+            heartbeat.set_value(not _heartbeat)
             time.sleep(1)
     except KeyboardInterrupt:
         print('_______________________server stopped_________________________')
