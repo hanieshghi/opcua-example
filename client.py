@@ -25,9 +25,10 @@ def connect_to_server(timeout=0):
         _client.set_user(os.getenv('USERNAME'))
         _client.set_password(os.getenv('PASSWORD'))
         _client.set_security_string("Basic256Sha256,SignAndEncrypt,cert/my_cert.der,cert/my_private_key.pem")
+        # _client.application_uri = "urn:opcua:python:server,IP: 127.0.0.1"
         # client.application_uri = "urn:example.org:FreeOpcUa:python-opcua"
-        client.secure_channel_timeout = 10000
-        client.session_timeout = 10000
+        _client.secure_channel_timeout = 10000
+        _client.session_timeout = 10000
 
         _client.connect()
         print('________________client connected_________________')
@@ -71,9 +72,9 @@ def start(_client):
             PRINT DATA
             """
             print_values(heartbeat_value, fact_value, length_value)
-
+            print('wait 5 seconds...')
             time.sleep(5)
-
+            print('make REST call to fetch new cat data...')
             """
                 GET CATFACT DATA through REST REQUEST
             """
@@ -140,9 +141,7 @@ def print_values(heartbeat, fact, length):
 
 
 if __name__ == "__main__":
-    client = None
-    while client is None:
-        client = connect_to_server()
+    client = connect_to_server()
     if not client:
         print("error in connection")
         os._exit(1)

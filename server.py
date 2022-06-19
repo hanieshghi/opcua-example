@@ -81,7 +81,7 @@ if __name__ == "__main__":
     length = catFactFolder.add_variable(lengthIdentifier, 'length', 0, ua.VariantType.Int64)
     heartbeat = mibaObject.add_variable(heartbeatIdentifier, 'heartbeat', True, ua.VariantType.Boolean)
 
-    #  fact and length should be writable to be changed from client
+    #  fact and length should be writable to be changed by client
     fact.set_writable()
     length.set_writable()
 
