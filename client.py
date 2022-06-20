@@ -25,7 +25,6 @@ def connect_to_server(timeout=0):
         _client.set_user(os.getenv('USERNAME'))
         _client.set_password(os.getenv('PASSWORD'))
         _client.set_security_string("Basic256Sha256,SignAndEncrypt,cert/my_cert.der,cert/my_private_key.pem")
-        # _client.application_uri = "urn:opcua:python:server,IP: 127.0.0.1"
         # client.application_uri = "urn:example.org:FreeOpcUa:python-opcua"
         _client.secure_channel_timeout = 10000
         _client.session_timeout = 10000
@@ -44,7 +43,7 @@ def connect_to_server(timeout=0):
         print('trying to connect after {} seconds'.format(timeout))
         time.sleep(timeout)
         timeout += 5
-        connect_to_server(timeout)
+        return connect_to_server(timeout)
 
     except Exception as e:
         print("unexpected error in connection", e)
@@ -91,8 +90,8 @@ def start(_client):
             _client.disconnect()
             os._exit(0)
 
-        except Exception as e:
-            print('\n_________connection Interrupted________', e)
+        except:
+            print('\n_________connection Interrupted________')
             _client = connect_to_server()
 
 

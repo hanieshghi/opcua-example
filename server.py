@@ -38,60 +38,65 @@ def print_values(_heartbeat, _fact, _length):
     x.border = True
     
     print(x)
-    
 
-if __name__ == "__main__":
+
+def server_setup():
     """
         SERVER SETUP
     """
-    serverName = os.getenv('SERVER_NAME')
-    nameSpace = os.getenv('SERVER_NAMESPACE')
+    server_name = os.getenv('SERVER_NAME')
+    name_space = os.getenv('SERVER_NAMESPACE')
     url = os.getenv('ENDPOINT')
 
-    server = Server()
-    server.set_server_name(serverName)
-    addressSpace = server.register_namespace(nameSpace)
-    server.set_endpoint(url)
+    _server = Server()
+    _server.set_server_name(server_name)
+    address_space = _server.register_namespace(name_space)
+    _server.set_endpoint(url)
 
     # set server security policy
-    server.set_security_policy([ua.SecurityPolicyType.Basic256Sha256_SignAndEncrypt])
-    server.load_certificate('cert/my_cert.der')
-    server.load_private_key('cert/my_private_key.pem')
+    _server.set_security_policy([ua.SecurityPolicyType.Basic256Sha256_SignAndEncrypt])
+    _server.load_certificate('cert/my_cert.der')
+    _server.load_private_key('cert/my_private_key.pem')
 
     #  set user manager
-    policyIDs = ["Username"]
-    server.set_security_IDs(policyIDs)
-    server.user_manager.set_user_manager(user_manager)
+    policy_ids = ["Username"]
+    _server.set_security_IDs(policy_ids)
+    _server.user_manager.set_user_manager(user_manager)
 
     """
         SERVER MODELING
     """
-    node = server.get_objects_node()
-    mibaObject = node.add_object(addressSpace, 'Miba')
-    catFactFolder = mibaObject.add_folder(addressSpace, 'catFact')
+    node = _server.get_objects_node()
+    miba_object = node.add_object(address_space, 'Miba')
+    cat_fact_folder = miba_object.add_folder(address_space, 'catFact')
 
     """
         add Variables
     """
-    factIdentifier = 'ns={};s=Miba.catfact.fact;'.format(addressSpace)
-    lengthIdentifier = 'ns={};s=Miba.catfact.length;'.format(addressSpace)
-    heartbeatIdentifier = 'ns={};s=Miba.heartbeat;'.format(addressSpace)
+    fact_identifier = 'ns={};s=Miba.catfact.fact;'.format(address_space)
+    length_identifier = 'ns={};s=Miba.catfact.length;'.format(address_space)
+    heartbeat_identifier = 'ns={};s=Miba.heartbeat;'.format(address_space)
 
-    fact = catFactFolder.add_variable(factIdentifier, 'fact', '', ua.VariantType.String)
-    length = catFactFolder.add_variable(lengthIdentifier, 'length', 0, ua.VariantType.Int64)
-    heartbeat = mibaObject.add_variable(heartbeatIdentifier, 'heartbeat', True, ua.VariantType.Boolean)
+    _fact = cat_fact_folder.add_variable(fact_identifier, 'fact', '', ua.VariantType.String)
+    _length = cat_fact_folder.add_variable(length_identifier, 'length', 0, ua.VariantType.Int64)
+    _heartbeat = miba_object.add_variable(heartbeat_identifier, 'heartbeat', True, ua.VariantType.Boolean)
 
     #  fact and length should be writable to be changed by client
-    fact.set_writable()
-    length.set_writable()
+    _fact.set_writable()
+    _length.set_writable()
 
     #  start server
-    server.start()
+    _server.start()
+    return _server, _heartbeat, _fact, _length
+
+
+if __name__ == "__main__":
+    server, heartbeat, fact, length = server_setup()
     try:
         while True:
-            _heartbeat = heartbeat.get_value()
-            print_values(_heartbeat, fact.get_value(), length.get_value())
-            heartbeat.set_value(not _heartbeat)
+            heartbeat_value = heartbeat.get_value()
+            print_values(heartbeat_value, fact.get_value(), length.get_value())
+            heartbeat.set_value(not heartbeat_value)
             time.sleep(1)
     except KeyboardInterrupt:
         print('_______________________server stopped_________________________')
