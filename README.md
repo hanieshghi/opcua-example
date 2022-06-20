@@ -1,7 +1,7 @@
 # opcua-example
 OPCUA server and client with encryption and authentication
 
-![output-gif](https://github.com/hanieshghi/opcua-example/blob/master/img/opcua-output.gif)
+![output-gif](img/opcua-output.gif)
 
 # How to run the code
 - Enter the virtual env. For example Linux:
