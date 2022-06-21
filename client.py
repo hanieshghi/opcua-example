@@ -9,10 +9,6 @@ from colorama import Fore, Style
 load_dotenv()
 sys.path.insert(0, "..")
 
-"""
-    This function tries to connect to the server
-"""
-
 
 def connect_to_server(timeout=0):
     try:
@@ -50,7 +46,7 @@ def connect_to_server(timeout=0):
         return False
 
 
-def start(_client):
+def main(_client):
     while True:
         try:
             """
@@ -144,4 +140,4 @@ if __name__ == "__main__":
     if not client:
         print("error in connection")
         os._exit(1)
-    start(client)
+    main(client)
