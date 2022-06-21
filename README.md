@@ -1,4 +1,4 @@
-# opcua-example
+# OPCUA-example
 OPCUA server and client with encryption and authentication
 
  ### Server key points:
