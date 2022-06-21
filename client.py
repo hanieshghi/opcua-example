@@ -87,6 +87,8 @@ def main(_client):
             os._exit(0)
 
         except:
+            # clear terminal
+            os.system('cls' if os.name == 'nt' else 'clear')
             print('\n_________connection Interrupted________')
             _client = connect_to_server()
 
